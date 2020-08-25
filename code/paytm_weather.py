@@ -45,7 +45,7 @@ if __name__ == '__main__':
 		rank() over(partition by year order by avg_temp desc) as highest_temp_rank, \
 		rank() over(partition by year order by avg_windspeed desc ) as highest_windspeed_rank,  \
 		rank() over(partition by year order by days_tornado desc) as most_tornadoes from \
-		( select year(to_date(YEARMODA,'yyyyMMdd')) as year, country_full, avg(TEMP) as avg_temp,avg(WDSP) as avg_windspeed,count(cast(substring(FRSHTT,6,1) as int)) as  days_tornado \
+		( select year(to_date(YEARMODA,'yyyyMMdd')) as year, country_full, avg(TEMP) as avg_temp,avg(WDSP) as avg_windspeed,sum(case when cast(substring(FRSHTT,6,1) as int) = 0 then 0 else 1 end) as days_tornado \
 		from wwc group by year(to_date(YEARMODA,'yyyyMMdd')), country_full) a")
 
 		results.createOrReplaceTempView('res')
