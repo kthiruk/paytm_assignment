@@ -1,6 +1,8 @@
 ##Adding comments for new branch
 ## Just Trying one more thing
 ##feature A
+## Feature B
+>>>>>>> feature-b
 from pyspark.sql import SparkSession
 from pyspark.sql.types import *
 from pyspark.sql.functions import *
