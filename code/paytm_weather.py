@@ -1,3 +1,4 @@
+##Adding comments for new branch
 from pyspark.sql import SparkSession
 from pyspark.sql.types import *
 from pyspark.sql.functions import *
@@ -40,12 +41,12 @@ if __name__ == '__main__':
 		weather_data_with_country.createOrReplaceTempView('wwc')
 		weather_data_with_country.persist()
 
-		results = spark.sql("select year, country_full, avg_temp, avg_windspeed, days_tornado, \
+		results = spark.sql("select year, country_full, avg_temp, avg_windspeed,  \
 		rank() over(partition by year order by avg_temp) as lowest_temp_rank , \
 		rank() over(partition by year order by avg_temp desc) as highest_temp_rank, \
-		rank() over(partition by year order by avg_windspeed desc ) as highest_windspeed_rank,  \
-		rank() over(partition by year order by days_tornado desc) as most_tornadoes from \
-		( select year(to_date(YEARMODA,'yyyyMMdd')) as year, country_full, avg(TEMP) as avg_temp,avg(WDSP) as avg_windspeed,sum(case when cast(substring(FRSHTT,6,1) as int) = 0 then 0 else 1 end) as days_tornado \
+		rank() over(partition by year order by avg_windspeed desc ) as highest_windspeed_rank from   \
+		( select year(to_date(YEARMODA,'yyyyMMdd')) as year, country_full, avg(case when TEMP = 9999.9 then 0 else TEMP end) as avg_temp, \
+		avg(case when WDSP = 999.9 then 0 else WDSP end) as avg_windspeed \
 		from wwc group by year(to_date(YEARMODA,'yyyyMMdd')), country_full) a")
 
 		results.createOrReplaceTempView('res')
@@ -59,8 +60,9 @@ if __name__ == '__main__':
 		print("Below is the Countries with the highest Wind Speed : ")
 		spark.sql("select year, country_full, avg_windspeed, highest_windspeed_rank from res where highest_windspeed_rank = 2").show()
 
+		tornadoes = spark.sql("select distinct yearmoda, country_full from wwc where substring(FRSHTT,6,1) = 1")
 		print("Below is the Countries with the highest Tornado Days : ")
-		spark.sql("select year, country_full, days_tornado, most_tornadoes from res where most_tornadoes = 1").show()
+		spark.sql("select year, country_full, days_tornado, most_tornadoes from res where most_tornadoes = 1 and days_tornado > 0").show()
 
     except Exception as e:
         logger.error("Weather Streaming Application has failed at %s"  % datetime.now())
